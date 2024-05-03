@@ -1,57 +1,117 @@
-// https://pokeapi.co/api/v2/pokemon/pikachu
+const apiUrl = "https://pokeapi.co/api/v2/pokemon/";
 
-// https://pokeapi.co/api/v2/pokemon-species/{numero}
-
-// https://pokeapi.co/api/v2/evolution-chain/{numero}
-
-// Vaya! algo salió mal.
-// Es posible que el nombre de tu pokemón este mal escrito.
-// Por favor revisar e intenta nuevamente.
-
-const apiUrl =
-  "https://pokeapi.co/api/v2/pokemon/";
-//const apiKey = "&appid=d3c39f57206d5904890771c822ffaac3";
-
-async function consultarApiClima(url) {
-  try {
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    console.error(`fallo la consulta a la api: ${error}`);
-    const contError = document.querySelector(".error");
-    const contWeather = document.querySelector(".weather");
-    contError.style.display = "block";
-    contWeather.style.display = "none";
-  }
+async function consultarApiPokemon(url) {
+    try {
+        const response = await axios.get(url);
+        return response.data; // Devolvemos solo los datos de la respuesta
+    } catch (error) {
+        console.error(`Fallo la consulta a la API: ${error}`);
+        throw new Error("No se pudo obtener los datos del Pokémon.");
+    }
 }
 
-async function obtenerDatosClima(url) {
-  const datos = await consultarApiClima(url);
-  let nombreCiudad = document.querySelector(".city");
-  nombreCiudad.innerHTML = datos.name;
-  let temperatura = document.querySelector(".temp");
-  temperatura.innerHTML = datos.main.temp + "°C";
-  let humedad = document.querySelector(".humidity");
-  humedad.innerHTML = datos.main.humidity + "%";
-  let viento = document.querySelector(".wind");
-  viento.innerHTML = datos.wind.speed + "km/h";
-  let iconoClima = document.querySelector(".weather-icon");
-  const estadoClima = datos.weather[0].main;
-  iconoClima.src = "images/" + String(estadoClima).toLowerCase() + ".png";
+async function obtenerDatosPokemon(url) {
+    try {
+        const datos = await consultarApiPokemon(url);
 
-  const contError = document.querySelector(".error");
-  const contWeather = document.querySelector(".weather");
-  contError.style.display = "none";
-  contWeather.style.display = "block";
+        const containerInfo = document.querySelector(".containerInfo");
+        containerInfo.style.display = "block";
+
+        const nombrePokemonElemento = document.querySelector(".pokemonName");
+        nombrePokemonElemento.innerHTML = datos.name;
+
+        const imagenPokemonElemento = document.querySelector(".pokemonImg");
+        imagenPokemonElemento.src = datos.sprites.other.home.front_default;
+
+        const tipoPokemonElemento = document.querySelector(".pokemonType");
+        tipoPokemonElemento.innerHTML = datos.types[0].type.name;
+
+        const abilidadesPokemonElemento = document.querySelector(".pokemonAbilities");
+        const habilidades = datos.abilities.map(ability => ability.ability.name);
+        abilidadesPokemonElemento.textContent = habilidades.join(", ");
+
+        const evolutionUrl = `${datos.species.url}`;
+        obtenerDatosPokemonEvolucion(evolutionUrl)
+
+        // Ocultar el contenedor de error si se muestra
+        const contError = document.querySelector(".containerError");
+        contError.style.display = "none";
+
+    } catch (error) {
+        console.error(`Error al obtener datos del Pokémon: ${error.message}`);
+
+        // Mostrar el contenedor de error y ocultar el contenedor de información
+        const contError = document.querySelector(".containerError");
+        contError.style.display = "block";
+
+        const containerInfo = document.querySelector(".containerInfo");
+        containerInfo.style.display = "none";
+    }
 }
 
-const searchButton = document.querySelector(".search button");
-const searchInput = document.querySelector(".search input");
+
+async function obtenerDatosPokemonEvolucion(url) {
+
+    const datos = await consultarApiPokemon(url);
+
+    const urlEvolucion1 = datos.evolution_chain.url;
+
+    const descripcionPokemonElemento = document.querySelector(".pokemonDescrition");
+    descripcionPokemonElemento.innerHTML = datos.flavor_text_entries[0].flavor_text;
+    
+    const evolutionUrl = `${urlEvolucion1}`;
+
+    // console.log(evolutionUrl)
+    obtenerDatosPokemonEvolucion1(evolutionUrl)
+
+}
+let evolutionName='';
+console.log(evolutionName)
+
+async function obtenerDatosPokemonEvolucion1(url) {
+
+    const datos = await consultarApiPokemon(url);
+
+    evolutionName = datos?.chain?.evolves_to[0].evolves_to[0].species.name;
+    // console.log(evolutionName)
+
+    const evolutionUrl = datos?.chain?.evolves_to[0].evolves_to[0].species.url;
+
+    const nombrePokemonElemento = document.querySelector(".pokemonName");
+
+    if (evolutionName != nombrePokemonElemento.textContent) {
+
+        const contError = document.querySelector(".containerEvolution");
+        contError.style.display = "block";
+    }
+    else{
+        const contError = document.querySelector(".containerEvolution");
+        contError.style.display = "none";
+    }
+
+
+    // obtenerDatosPokemonEvolucion2(evolutionUrl)
+}
+
+
+const searchButton = document.querySelector(".buttonSearch");
+const searchInput = document.querySelector("input");
 
 searchButton.addEventListener("click", () => {
-  const nombrePokemon = searchInput.value;
-  console.log(nombrePokemon);
-  const url = `${apiUrl}${nombrePokemon}`;
-  console.log(url);
-  obtenerDatosClima(url);
+    const nombrePokemon = searchInput.value
+    const url = `${apiUrl}${nombrePokemon}`;
+    obtenerDatosPokemon(url);
+    // console.log(url)
+
+});
+
+const evolutionButton = document.querySelector(".buttonEvolution");
+
+evolutionButton.addEventListener("click", () => {
+
+    const url = `${apiUrl}${evolutionName}`;
+
+    obtenerDatosPokemon(url);
+
+
 });
