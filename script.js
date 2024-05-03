@@ -58,33 +58,36 @@ async function obtenerDatosPokemonEvolucion(url) {
 
     const descripcionPokemonElemento = document.querySelector(".pokemonDescrition");
     descripcionPokemonElemento.innerHTML = datos.flavor_text_entries[0].flavor_text;
-    
+
     const evolutionUrl = `${urlEvolucion1}`;
 
     // console.log(evolutionUrl)
     obtenerDatosPokemonEvolucion1(evolutionUrl)
 
 }
-let evolutionName='';
+let evolutionName = '';
+let evolutionName2 = '';
 console.log(evolutionName)
 
 async function obtenerDatosPokemonEvolucion1(url) {
 
     const datos = await consultarApiPokemon(url);
 
+    evolutionName2 = datos?.chain?.evolves_to[0]?.species.name;
     evolutionName = datos?.chain?.evolves_to[0].evolves_to[0].species.name;
-    // console.log(evolutionName)
+    // console.log(evolutionName2)
 
     const evolutionUrl = datos?.chain?.evolves_to[0].evolves_to[0].species.url;
 
     const nombrePokemonElemento = document.querySelector(".pokemonName");
 
     if (evolutionName != nombrePokemonElemento.textContent) {
-
+        if(evolutionName2== nombrePokemonElemento.textContent)
+        evolutionName2 = ''
         const contError = document.querySelector(".containerEvolution");
         contError.style.display = "block";
     }
-    else{
+    else {
         const contError = document.querySelector(".containerEvolution");
         contError.style.display = "none";
     }
@@ -108,8 +111,13 @@ searchButton.addEventListener("click", () => {
 const evolutionButton = document.querySelector(".buttonEvolution");
 
 evolutionButton.addEventListener("click", () => {
-
-    const url = `${apiUrl}${evolutionName}`;
+    let url = '';
+    if (evolutionName2){
+        url = `${apiUrl}${evolutionName2}`;
+        evolutionName2='';
+    }
+    else
+        url = `${apiUrl}${evolutionName}`;
 
     obtenerDatosPokemon(url);
 
