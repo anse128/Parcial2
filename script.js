@@ -46,7 +46,7 @@ const obtenerDatosPokemon = async (url) => {
 
         for (let i = 0; i < datos.types.length; i++) {
             const urlType = `${apiType}${datos.types[i].type.name}`;
-            type.push(await updateTypeAbilty(urlType))
+            type.push(await obtenerTypeAbilty(urlType))
             tipoPokemonElemento.innerHTML = type
         }
 
@@ -57,7 +57,7 @@ const obtenerDatosPokemon = async (url) => {
 
         for (let i = 0; i < datos.abilities.length; i++) {
             const urlHabilidad = `${apiAbility}${datos.abilities[i].ability.name}`;
-            ability.push(await updateTypeAbilty(urlHabilidad));
+            ability.push(await obtenerTypeAbilty(urlHabilidad));
             habilidadesPokemonElemento.innerHTML = ability;
         }
         // Ocultar el contenedor de error si se muestra
@@ -87,7 +87,7 @@ const obtenerDescripcionUrlEvolution = async (url) => {
     }
 }
 
-const updateTypeAbilty = async (url) => {
+const obtenerTypeAbilty = async (url) => {
     try {
         const datos = await consultarApiPokemon(url);
         return datos.names[5].name
@@ -95,7 +95,6 @@ const updateTypeAbilty = async (url) => {
         console.error(error);
     }
 }
-
 
 const mostrarError = (mensaje) => {
     console.error(`Error al obtener datos del Pokémon: ${mensaje.message}`);
@@ -113,26 +112,29 @@ let evolutionName2 = '';
 
 
 async function obtenerDatosEvolucion(url) {
+    try {
+        const datos = await consultarApiPokemon(url);
 
-    const datos = await consultarApiPokemon(url);
+        evolutionName2 = datos?.chain?.evolves_to[0]?.species.name;
+        evolutionName = datos?.chain?.evolves_to[0].evolves_to[0].species.name;
 
-    evolutionName2 = datos?.chain?.evolves_to[0]?.species.name;
-    evolutionName = datos?.chain?.evolves_to[0].evolves_to[0].species.name;
-    
-    const nombrePokemonElemento = document.querySelector(".pokemonName");
+        const nombrePokemonElemento = document.querySelector(".pokemonName");
 
-    if (evolutionName != nombrePokemonElemento.textContent) {
-        if (evolutionName2 == nombrePokemonElemento.textContent)
-            evolutionName2 = ''
-        const contError = document.querySelector(".containerEvolution");
-        contError.style.display = "block";
+        if (evolutionName != nombrePokemonElemento.textContent) {
+            if (evolutionName2 == nombrePokemonElemento.textContent)
+                evolutionName2 = ''
+            const contError = document.querySelector(".containerEvolution");
+            contError.style.display = "block";
+        }
+        else {
+            const contError = document.querySelector(".containerEvolution");
+            contError.style.display = "none";
+        }
+    } catch (error) {
+        console.error(error);
     }
-    else {
-        const contError = document.querySelector(".containerEvolution");
-        contError.style.display = "none";
-    }
+
 }
-
 
 
 const searchButton = document.querySelector(".buttonSearch");
